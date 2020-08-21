@@ -1,0 +1,46 @@
+#
+# Copyright 2018-2020, Intel Corporation
+#
+# 'recipe' for Docker building the DCO OPT environment
+#
+
+# Pull base image
+FROM fedora:latest
+MAINTAINER DCO <dev_ops@hpdd.intel.com>
+
+# use same UID as host and default value of 1000 if not specified
+ARG UID=1000
+
+# Update distribution
+#Nothing to do for CentOS
+
+# Install basic tools
+RUN dnf install -y mock make rpm-build curl createrepo rpmlint redhat-lsb-core \
+                   git python-srpm-macros
+
+# Add build user (to keep rpmbuild happy)
+ENV USER build
+ENV PASSWD build
+RUN useradd -u $UID -ms /bin/bash $USER
+RUN echo "$USER:$PASSWD" | chpasswd
+# add the user to the mock group so it can run mock
+RUN usermod -a -G mock $USER
+
+# mock in Docker needs to use the old-chroot option
+RUN grep use_nspawn || \
+    echo "config_opts['use_nspawn'] = False" >> /etc/mock/site-defaults.cfg
+
+RUN chmod g+w /etc/mock/default.cfg
+
+RUN dnf install -y bzip2-devel curl gcc gdbm-devel json-c-devel \
+                   libffi-devel libnsl2-devel libyaml-devel lz4-devel \
+                   ncurses-devel openssl-devel \
+                   python3-demjson python3-pip pylint \
+                   readline-devel rubygems ShellCheck sqlite-devel tk-devel \
+                   uuid-devel xz-devel yamllint zlib-devel
+
+RUN pip3 install codespell pygithub; \
+    gem install ruby-lint
+
+# Create a target directory for prebuilts
+RUN mkdir -p /opt/do; chown $UID /opt/do; ls -ld /opt/do

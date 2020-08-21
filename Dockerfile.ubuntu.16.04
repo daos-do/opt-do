@@ -1,0 +1,37 @@
+#
+# Copyright 2019, Intel Corporation
+#
+# 'recipe' for Docker building the DCO OPT environment
+#
+# Pull base image
+FROM ubuntu:16.04
+MAINTAINER DCO <dev_ops@hpdd.intel.com>
+
+# use same UID as host and default value of 1000 if not specified
+ARG UID=1000
+
+# Install basic tools
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            autoconf bash curl debhelper dh-make dpkg-dev doxygen gcc \
+            git git-buildpackage locales make patch pbuilder rpm wget
+
+# Add build user (to keep chrootbuild happy)
+ENV USER build
+RUN useradd -u $UID -ms /bin/bash $USER
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    curl gcc libffi-dev libssl-dev \
+    libbz2-dev libgdbm-dev liblz4-dev libncurses5-dev libreadline-dev \
+    libsqlite3-dev tk-dev uuid-dev liblzma-dev libzip-dev
+
+# Create a target directory for prebuilts
+RUN mkdir -p /opt/do; chown $UID /opt/do; ls -ld /opt/do
+
+# need to run the build command as root, as it needs to chroot
+#RUN if ! grep "^#includedir /etc/sudoers.d" /etc/sudoers; then              \
+#        echo "#includedir /etc/sudoers.d" >> /etc/sudoers;                  \
+#    fi;                                                                     \
+#   echo "build ALL=(ALL) NOPASSWD: /usr/sbin/pbuilder" > /etc/sudoers.d/build; \
+#   chmod 0440 /etc/sudoers.d/build;                                        \
+#   visudo -c;                                                              \
+#   sudo -l -U build
