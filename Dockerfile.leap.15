@@ -1,0 +1,39 @@
+#
+# Copyright 2020, Intel Corporation
+#
+# 'recipe' for Docker building the DCO OPT environment
+#
+
+# Pull base image
+FROM opensuse/leap:15
+MAINTAINER DCO <dev_ops@hpdd.intel.com>
+
+# Build arguments can be set via -build-arg
+# use same UID as host and default value of 1000 if not specified
+ARG UID=1000
+
+# Update distribution
+# It's better to put the zypper update in the same "cache layer" as the
+# zypper install command so that the database is updated if/when the
+# installed packages list below is updated
+RUN zypper --non-interactive update
+RUN zypper --non-interactive install bind-utils \
+        gcc make
+
+#RUN echo 'jenkins ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/user && \
+#  chmod 0440 /etc/sudoers.d/user
+
+ENV USER jenkins
+RUN useradd -u $UID -ms /bin/bash $USER
+
+RUN zypper --non-interactive update && zypper --non-interactive install \
+    curl gcc git gzip tar xz libffi-devel libopenssl-devel \
+    gdbm-devel libbz2-devel liblz4-devel libnsl-devel ncurses-devel \
+    readline-devel sqlite3-devel tk-devel libuuid-devel xz-devel zlib-devel \
+    unzip
+
+RUN update-ca-certificates
+
+# Create a target directory for prebuilts
+RUN mkdir -p /opt/do; chown $UID /opt/do; ls -ld /opt/do
+

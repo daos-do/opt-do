@@ -1,0 +1,9 @@
+# File: opt_do_version.txt
+#
+# Update this file making changes to set the version number
+# Python package information should be set in requirements.txt
+# 
+OPT_DO_VERSION="0.1.0"
+PYTHON3_VERSION="3.8.5"
+PACKER_VERSION="1.6.1"
+
