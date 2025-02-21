@@ -6,7 +6,7 @@
 
 # Pull base image
 FROM fedora:latest
-MAINTAINER DCO <dev_ops@hpdd.intel.com>
+MAINTAINER DCO <core-daos-devops@groups.int.hpe.com>
 
 # use same UID as host and default value of 1000 if not specified
 ARG UID=1000
